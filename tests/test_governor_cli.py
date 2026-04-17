@@ -55,3 +55,35 @@ def test_schema_matches_sample_artifacts() -> None:
 
     validate(instance=preflight_sample, schema=preflight_schema)
     validate(instance=compliance_sample, schema=compliance_schema)
+
+
+def test_preflight_empty_checks_is_invalid(tmp_path: Path) -> None:
+    artifact = {
+        "contract": "governed.preflight/v1",
+        "repo": "vaflya32407/governed-cli",
+        "route": "merge",
+        "checks": [],
+    }
+    path = tmp_path / "preflight.json"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    result = run_cli("preflight", "--artifact", str(path))
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["reason"] == "one or more checks did not pass"
+
+
+def test_compliance_block_decision_is_invalid(tmp_path: Path) -> None:
+    artifact = {
+        "contract": "governed.compliance/v1",
+        "run_id": "run-1",
+        "decision": "block",
+        "controls": [{"id": "required-checks", "status": "allow"}],
+    }
+    path = tmp_path / "compliance.json"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    result = run_cli("compliance", "--artifact", str(path))
+    assert result.returncode == 3
+    payload = json.loads(result.stdout)
+    assert payload["reason"] == "decision blocks merge"

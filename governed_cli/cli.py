@@ -12,7 +12,7 @@ def _load_json(path: str) -> dict[str, Any]:
 
 
 def _status_ok(items: list[dict[str, Any]], key: str) -> bool:
-    return all(item.get(key) in {"pass", "allow"} for item in items)
+    return bool(items) and all(item.get(key) in {"pass", "allow"} for item in items)
 
 
 def validate_preflight(artifact: dict[str, Any]) -> tuple[bool, str]:
@@ -23,7 +23,9 @@ def validate_preflight(artifact: dict[str, Any]) -> tuple[bool, str]:
     checks = artifact.get("checks")
     if not isinstance(checks, list):
         return False, "checks must be a list"
-    return _status_ok(checks, "status"), "ok"
+    if not _status_ok(checks, "status"):
+        return False, "one or more checks did not pass"
+    return True, "ok"
 
 
 def validate_compliance(artifact: dict[str, Any]) -> tuple[bool, str]:
@@ -36,7 +38,11 @@ def validate_compliance(artifact: dict[str, Any]) -> tuple[bool, str]:
     if not isinstance(controls, list):
         return False, "controls must be a list"
     controls_ok = _status_ok(controls, "status")
-    return (decision == "allow" and controls_ok), "ok"
+    if decision != "allow":
+        return False, "decision blocks merge"
+    if not controls_ok:
+        return False, "one or more controls are blocking"
+    return True, "ok"
 
 
 def _route(policy: str, risk: str) -> str:
