@@ -1,0 +1,19 @@
+name: Governance contract request
+description: Propose a change to governance contracts or governed CLI behavior.
+title: "[Governance]: "
+labels: ["governance"]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the contract/routing/preflight/compliance/hook change.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: How does this affect repositories or governed workflow consumers?
+    validations:
+      required: true

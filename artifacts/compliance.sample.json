@@ -1,0 +1,15 @@
+{
+  "contract": "governed.compliance/v1",
+  "run_id": "run-2026-04-17-0001",
+  "decision": "allow",
+  "controls": [
+    {
+      "id": "branch-protection",
+      "status": "allow"
+    },
+    {
+      "id": "required-checks",
+      "status": "allow"
+    }
+  ]
+}

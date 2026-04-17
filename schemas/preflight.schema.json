@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/preflight.schema.json",
+  "title": "Governed Preflight Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract", "repo", "route", "checks"],
+  "properties": {
+    "contract": {
+      "type": "string",
+      "const": "governed.preflight/v1"
+    },
+    "repo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route": {
+      "type": "string",
+      "enum": ["merge", "manual-review"]
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "warn", "fail"]
+          }
+        }
+      }
+    }
+  }
+}

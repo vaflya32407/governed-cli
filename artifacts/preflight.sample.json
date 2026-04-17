@@ -1,0 +1,15 @@
+{
+  "contract": "governed.preflight/v1",
+  "repo": "vaflya32407/governed-cli",
+  "route": "merge",
+  "checks": [
+    {
+      "name": "hooks-ready",
+      "status": "pass"
+    },
+    {
+      "name": "policy-evaluated",
+      "status": "pass"
+    }
+  ]
+}

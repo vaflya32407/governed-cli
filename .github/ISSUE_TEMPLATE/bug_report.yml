@@ -1,0 +1,31 @@
+name: Bug report
+description: Report a defect in governance contracts, routing, preflight, compliance, or hooks.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - contracts
+        - routing
+        - preflight
+        - compliance
+        - hooks
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction
+      description: Include CLI command(s), artifact(s), and expected behavior.
+    validations:
+      required: true
