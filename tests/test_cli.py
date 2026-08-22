@@ -61,6 +61,28 @@ class GovernedCliTests(unittest.TestCase):
             payload = json.loads(completed.stdout)
             self.assertEqual(payload["status"], "passed")
 
+    def test_preflight_run_all_skipped(self) -> None:
+        with tempfile.TemporaryDirectory() as repo_dir:
+            repo_path = Path(repo_dir)
+            self.init_git_repo(repo_path)
+            custom_contract = Path(repo_dir) / "contract.json"
+            contract = json.loads(CONTRACT.read_text())
+            contract["preflight"]["requiredChecks"] = ["future-check"]
+            custom_contract.write_text(json.dumps(contract))
+            completed = self.run_cli(
+                "preflight",
+                "run",
+                "--contract",
+                str(custom_contract),
+                "--task",
+                str(TASK),
+                "--repo-root",
+                str(repo_path),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["status"], "skipped")
+
     def test_session_start_and_audit_show(self) -> None:
         with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as state_dir:
             repo_path = Path(repo_dir)

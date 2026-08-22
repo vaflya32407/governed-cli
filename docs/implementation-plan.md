@@ -29,9 +29,9 @@ This repository is intentionally spec-first, but it now includes a minimal runna
 - render human-readable audit summaries
 - support export to external compliance systems if needed
 
-## First concrete CLI surface
+## Current concrete CLI surface
 
-A minimal future CLI could look like:
+The current prototype exposes:
 
 ```text
 governed contract validate

@@ -146,9 +146,11 @@ git commit -m "init"
 Then start and inspect a local governed session:
 
 ```bash
+REPO_ROOT=/path/to/your/governed-cli/clone
+
 governed session start \
-  --contract /home/runner/work/governed-cli/governed-cli/examples/repo-contract.example.json \
-  --task /home/runner/work/governed-cli/governed-cli/examples/task.example.json \
+  --contract "$REPO_ROOT/examples/repo-contract.example.json" \
+  --task "$REPO_ROOT/examples/task.example.json" \
   --repo-root /tmp/governed-demo \
   --state-dir /tmp/governed-demo/.governed
 
