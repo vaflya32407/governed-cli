@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/repo-contract.schema.json",
+  "title": "Governed CLI Repo Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "repository",
+    "policy",
+    "routing",
+    "preflight",
+    "compliance"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "defaultBranch"],
+      "properties": {
+        "name": { "type": "string" },
+        "defaultBranch": { "type": "string" }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedActions", "protectedPaths"],
+      "properties": {
+        "allowedActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["read", "edit", "test", "commit", "open-pr"]
+          },
+          "uniqueItems": true
+        },
+        "protectedPaths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "allowedPaths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approvalRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "require"],
+            "properties": {
+              "when": { "type": "string" },
+              "require": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routes"],
+      "properties": {
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "intent", "risk", "allowedActions"],
+            "properties": {
+              "name": { "type": "string" },
+              "intent": { "type": "string" },
+              "risk": {
+                "type": "string",
+                "enum": ["low", "moderate", "high"]
+              },
+              "allowedActions": {
+                "type": "array",
+                "items": { "type": "string" },
+                "uniqueItems": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredChecks"],
+      "properties": {
+        "requiredChecks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["auditFields"],
+      "properties": {
+        "auditFields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "retention": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

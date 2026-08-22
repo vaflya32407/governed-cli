@@ -1,0 +1,54 @@
+{
+  "sessionId": "sess_docs_blueprint_001",
+  "task": {
+    "intent": "documentation",
+    "requestedBy": "maintainer"
+  },
+  "route": {
+    "name": "docs-only",
+    "risk": "low",
+    "reasonCodes": [
+      "intent=documentation",
+      "allowed-paths-only",
+      "no-protected-paths-requested"
+    ]
+  },
+  "state": "completed",
+  "preflight": {
+    "status": "passed",
+    "checks": [
+      {
+        "name": "contract-valid",
+        "status": "passed"
+      },
+      {
+        "name": "clean-working-tree",
+        "status": "passed"
+      },
+      {
+        "name": "route-allowed-by-policy",
+        "status": "passed"
+      }
+    ]
+  },
+  "audit": {
+    "contractVersion": "1.0.0",
+    "events": [
+      {
+        "type": "session.created",
+        "timestamp": "2026-08-22T16:23:16Z",
+        "summary": "Blueprint documentation task created"
+      },
+      {
+        "type": "route.selected",
+        "timestamp": "2026-08-22T16:24:00Z",
+        "summary": "Task routed to docs-only workflow"
+      },
+      {
+        "type": "session.completed",
+        "timestamp": "2026-08-22T16:30:00Z",
+        "summary": "Documentation artifacts updated and recorded"
+      }
+    ]
+  }
+}

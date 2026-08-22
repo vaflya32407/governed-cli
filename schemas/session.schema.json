@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/session.schema.json",
+  "title": "Governed CLI Session",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sessionId",
+    "task",
+    "route",
+    "state",
+    "preflight",
+    "audit"
+  ],
+  "properties": {
+    "sessionId": {
+      "type": "string"
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "requestedBy"],
+      "properties": {
+        "intent": { "type": "string" },
+        "requestedBy": { "type": "string" }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "risk", "reasonCodes"],
+      "properties": {
+        "name": { "type": "string" },
+        "risk": {
+          "type": "string",
+          "enum": ["low", "moderate", "high"]
+        },
+        "reasonCodes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "validated",
+        "running",
+        "blocked",
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "checks"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["passed", "failed", "skipped"]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "status"],
+            "properties": {
+              "name": { "type": "string" },
+              "status": {
+                "type": "string",
+                "enum": ["passed", "failed", "skipped"]
+              },
+              "details": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractVersion", "events"],
+      "properties": {
+        "contractVersion": { "type": "string" },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "timestamp"],
+            "properties": {
+              "type": { "type": "string" },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "summary": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

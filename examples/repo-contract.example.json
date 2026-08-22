@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "repository": {
+    "name": "vaflya32407/governed-cli",
+    "defaultBranch": "main"
+  },
+  "policy": {
+    "allowedActions": ["read", "edit", "test", "commit"],
+    "protectedPaths": [".github/workflows/", "infra/secrets/"],
+    "allowedPaths": ["README.md", "docs/", "schemas/", "examples/"],
+    "approvalRules": [
+      {
+        "when": "route.risk == 'high'",
+        "require": "human-approval"
+      }
+    ]
+  },
+  "routing": {
+    "routes": [
+      {
+        "name": "docs-only",
+        "intent": "documentation",
+        "risk": "low",
+        "allowedActions": ["read", "edit", "commit"]
+      },
+      {
+        "name": "spec-update",
+        "intent": "schema-or-policy",
+        "risk": "moderate",
+        "allowedActions": ["read", "edit", "test", "commit"]
+      }
+    ]
+  },
+  "preflight": {
+    "requiredChecks": [
+      "contract-valid",
+      "clean-working-tree",
+      "route-allowed-by-policy",
+      "no-protected-path-conflict"
+    ]
+  },
+  "compliance": {
+    "auditFields": [
+      "sessionId",
+      "requestedBy",
+      "route",
+      "preflightStatus",
+      "finalState"
+    ],
+    "retention": "180d"
+  }
+}
