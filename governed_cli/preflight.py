@@ -64,7 +64,9 @@ def run_preflight(contract: dict, task: dict, route: dict, repo_root: str | Path
 
         checks.append({"name": check_name, "status": status, "details": details})
 
-    if any(check["status"] == "failed" for check in checks):
+    if not checks:
+        overall = "skipped"
+    elif any(check["status"] == "failed" for check in checks):
         overall = "failed"
     elif checks and all(check["status"] == "skipped" for check in checks):
         overall = "skipped"

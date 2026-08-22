@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from governed_cli.preflight import run_preflight
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = REPO_ROOT / "examples" / "repo-contract.example.json"
 TASK = REPO_ROOT / "examples" / "task.example.json"
@@ -60,6 +62,19 @@ class GovernedCliTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             payload = json.loads(completed.stdout)
             self.assertEqual(payload["status"], "passed")
+
+    def test_run_preflight_empty_checks_is_skipped(self) -> None:
+        contract = json.loads(CONTRACT.read_text())
+        contract["preflight"]["requiredChecks"] = []
+        task = json.loads(TASK.read_text())
+        route = {
+            "name": "docs-only",
+            "risk": "low",
+            "allowedActions": ["read", "edit", "commit"],
+            "reasonCodes": ["intent=documentation"],
+        }
+        payload = run_preflight(contract, task, route, REPO_ROOT)
+        self.assertEqual(payload["status"], "skipped")
 
     def test_preflight_run_all_skipped(self) -> None:
         with tempfile.TemporaryDirectory() as repo_dir:
