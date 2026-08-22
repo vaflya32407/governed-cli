@@ -1,6 +1,6 @@
 # Architecture
 
-`governed-cli` models agentic execution as a policy-constrained control plane around repository work.
+`governed-cli` models agentic execution as a policy-constrained control plane around repository work. The current repository includes a minimal local Python prototype for contract validation, route explanation, preflight, session persistence, and audit inspection.
 
 ## Control surfaces
 
@@ -39,6 +39,11 @@ Responsibilities:
 - track state transitions and checkpoints
 - stop, resume, or cancel execution
 - attach outputs, evidence, and exceptions
+
+Prototype note:
+- the current scaffold persists sessions as local JSON files under `.governed/sessions/`
+- sessions currently materialize as `validated` or `blocked` after preflight
+- future phases can add resumed and cancelled transitions
 
 ### Compliance logger
 The compliance logger emits the evidence needed for later review.

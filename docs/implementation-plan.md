@@ -1,6 +1,6 @@
 # Implementation plan
 
-This repository is intentionally spec-first. A practical implementation can be built in small layers.
+This repository is intentionally spec-first, but it now includes a minimal runnable local prototype. A fuller implementation can still be built in small layers.
 
 ## Phase 1: Spec and artifact validation
 - finalize repo contract schema
@@ -9,6 +9,7 @@ This repository is intentionally spec-first. A practical implementation can be b
 - provide validators and example fixtures
 
 ## Phase 2: Local session control
+- prototype status: basic `session start` and `session status` commands are implemented with local JSON storage
 - add a CLI entrypoint
 - implement `session start`, `session status`, `session stop`, and `session resume`
 - persist sessions locally as structured records

@@ -1,8 +1,8 @@
 # governed-cli
 
-A spec-first blueprint for a governed CLI that runs agentic repository workflows with explicit policy, routing, session control, and auditability.
+A cloneable blueprint and runnable local prototype for a governed CLI that runs agentic repository workflows with explicit policy, routing, session control, and auditability.
 
-This repository is intentionally educational before it is executable. It describes the shape of a Waldo-like governance layer for agentic work: every task is classified, validated, executed inside a bounded session, and recorded for later review.
+This repository is intentionally spec-first, but it is no longer docs-only. It includes a small Python prototype that demonstrates the shape of a Waldo-like governance layer for local agentic work: every task is classified, validated, executed inside a bounded session, and recorded for later review.
 
 ## Why this exists
 
@@ -94,7 +94,80 @@ request
 
 A practical implementation should refuse to execute when the contract is missing, the route is incompatible with policy, or preflight cannot prove the repository is in a safe state.
 
-## Suggested repository structure
+## What you can run today
+
+Requirements:
+- Python 3.11+
+
+Install locally:
+
+```bash
+python -m pip install -e .
+```
+
+Run the following commands from the repository root.
+
+Validate the example contract:
+
+```bash
+governed contract validate --contract examples/repo-contract.example.json
+```
+
+Explain the route for the example task:
+
+```bash
+governed route explain \
+  --contract examples/repo-contract.example.json \
+  --task examples/task.example.json
+```
+
+Run preflight against the current repository:
+
+```bash
+governed preflight run \
+  --contract examples/repo-contract.example.json \
+  --task examples/task.example.json \
+  --repo-root .
+```
+
+To start a validated session, use a clean repository root:
+
+```bash
+mkdir -p /tmp/governed-demo
+cd /tmp/governed-demo
+git init
+git config user.name "Demo User"
+git config user.email "demo@example.com"
+printf 'demo\n' > README.md
+git add README.md
+git commit -m "init"
+```
+
+Then start and inspect a local governed session:
+
+```bash
+governed session start \
+  --contract /home/runner/work/governed-cli/governed-cli/examples/repo-contract.example.json \
+  --task /home/runner/work/governed-cli/governed-cli/examples/task.example.json \
+  --repo-root /tmp/governed-demo \
+  --state-dir /tmp/governed-demo/.governed
+
+governed session status \
+  --id <session-id> \
+  --state-dir /tmp/governed-demo/.governed
+
+governed audit show \
+  --id <session-id> \
+  --state-dir /tmp/governed-demo/.governed
+```
+
+Run the focused test suite:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+## Repository structure
 
 ```text
 .
@@ -104,28 +177,33 @@ A practical implementation should refuse to execute when the contract is missing
 │   └── implementation-plan.md
 ├── examples/
 │   ├── repo-contract.example.json
+│   ├── task.example.json
 │   └── session.example.json
+├── governed_cli/
+│   ├── cli.py                # CLI entrypoint
+│   ├── contract.py           # contract loading and validation
+│   ├── preflight.py          # preflight checks for prototype routes
+│   ├── routing.py            # task intent to route resolution
+│   └── session.py            # local file-backed session store
 ├── schemas/
 │   ├── repo-contract.schema.json
 │   └── session.schema.json
-├── cmd/
-│   └── governed/           # future CLI entrypoint
-└── internal/
-    ├── contract/           # contract loading and validation
-    ├── session/            # session lifecycle and persistence
-    ├── routing/            # intent classification and route selection
-    ├── preflight/          # safety and admissibility checks
-    └── compliance/         # audit events and reporting
+├── tests/
+│   └── test_cli.py
+├── pyproject.toml
+└── .governed/               # local runtime state, ignored by git
 ```
 
-Only the documentation, schemas, and examples are present today. The `cmd/` and `internal/` paths show the intended shape for a future implementation.
+The Python package is intentionally small. It is meant to be a local starter repo you can clone, run, and extend rather than a finished production runtime.
 
 ## Example artifacts in this repository
 
 - `schemas/repo-contract.schema.json` — schema for repository governance rules
 - `schemas/session.schema.json` — schema for governed session state and evidence
 - `examples/repo-contract.example.json` — example contract for a documentation-safe repository workflow
+- `examples/task.example.json` — example incoming task for local routing and preflight
 - `examples/session.example.json` — example session showing routing, preflight, and audit outcomes
+- `governed_cli/cli.py` — runnable CLI surface for contract, route, preflight, session, and audit commands
 
 ## Minimal governed workflow
 
@@ -133,9 +211,9 @@ Only the documentation, schemas, and examples are present today. The `cmd/` and 
 2. Normalize the incoming task request.
 3. Classify the request into a route.
 4. Run preflight checks required by that route.
-5. Start a session only if the route and checks are admissible.
-6. Execute bounded actions allowed by the contract.
-7. Emit audit events and final session status.
+5. Create a local session record with a `validated` or `blocked` state.
+6. Persist audit events under `.governed/sessions/`.
+7. Inspect the result through `session status` and `audit show`.
 
 ## Waldo-style governance model
 
@@ -146,24 +224,21 @@ This repository uses "Waldo-style" as shorthand for an agent workflow that is no
 - **preflighted** — risky actions are rejected before execution
 - **auditable** — every important decision leaves evidence
 
-## Initial implementation milestones
+## Current prototype coverage
 
-1. **Contract loader and validator**
-   - load repo contract from a standard path
-   - validate against schema
-   - expose effective permissions to the runtime
-2. **Session store**
-   - create, update, stop, resume, and inspect sessions
-   - persist transitions and artifacts
-3. **Routing engine**
-   - classify tasks into workflow families
-   - provide reason codes for every route decision
-4. **Preflight engine**
-   - run reusable checks before any mutation
-   - block execution on policy or state failures
-5. **Compliance pipeline**
-   - emit structured audit events
-   - support review, retention, and exception reporting
+Implemented now:
+- contract validation
+- route explanation
+- preflight execution
+- local session creation and inspection
+- structured audit event output
+
+Still to add:
+- richer intent classification
+- session resume/stop transitions
+- pluggable policy engines
+- external audit sinks
+- real bounded execution of downstream agents or workflows
 
 ## Non-goals for the blueprint phase
 

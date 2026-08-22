@@ -1,0 +1,124 @@
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+CONTRACT = REPO_ROOT / "examples" / "repo-contract.example.json"
+TASK = REPO_ROOT / "examples" / "task.example.json"
+
+
+class GovernedCliTests(unittest.TestCase):
+    def run_cli(self, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, "-m", "governed_cli.cli", *args],
+            cwd=cwd or REPO_ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def init_git_repo(self, path: Path) -> None:
+        subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "config", "user.name", "Test User"], cwd=path, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=path, check=True, capture_output=True, text=True)
+        (path / "README.md").write_text("test\n")
+        subprocess.run(["git", "add", "README.md"], cwd=path, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "commit", "-m", "init"], cwd=path, check=True, capture_output=True, text=True)
+
+    def test_contract_validate(self) -> None:
+        completed = self.run_cli("contract", "validate", "--contract", str(CONTRACT))
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["status"], "ok")
+
+    def test_route_explain(self) -> None:
+        completed = self.run_cli("route", "explain", "--contract", str(CONTRACT), "--task", str(TASK))
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["name"], "docs-only")
+        self.assertIn("intent=documentation", payload["reasonCodes"])
+
+    def test_preflight_run(self) -> None:
+        with tempfile.TemporaryDirectory() as repo_dir:
+            repo_path = Path(repo_dir)
+            self.init_git_repo(repo_path)
+            completed = self.run_cli(
+                "preflight",
+                "run",
+                "--contract",
+                str(CONTRACT),
+                "--task",
+                str(TASK),
+                "--repo-root",
+                str(repo_path),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["status"], "passed")
+
+    def test_session_start_and_audit_show(self) -> None:
+        with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as state_dir:
+            repo_path = Path(repo_dir)
+            self.init_git_repo(repo_path)
+            completed = self.run_cli(
+                "session",
+                "start",
+                "--contract",
+                str(CONTRACT),
+                "--task",
+                str(TASK),
+                "--repo-root",
+                str(repo_path),
+                "--state-dir",
+                str(state_dir),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            session = json.loads(completed.stdout)
+            self.assertEqual(session["state"], "validated")
+
+            audit = self.run_cli("audit", "show", "--id", session["sessionId"], "--state-dir", str(state_dir))
+            self.assertEqual(audit.returncode, 0, audit.stderr)
+            payload = json.loads(audit.stdout)
+            self.assertEqual(payload["sessionId"], session["sessionId"])
+            self.assertGreaterEqual(len(payload["events"]), 3)
+
+    def test_session_start_blocks_protected_path(self) -> None:
+        with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as state_dir:
+            repo_path = Path(repo_dir)
+            self.init_git_repo(repo_path)
+            protected_task = Path(repo_dir) / "task.json"
+            protected_task.write_text(
+                json.dumps(
+                    {
+                        "intent": "documentation",
+                        "requestedBy": "local-user",
+                        "targetPaths": [".github/workflows/ci.yml"],
+                        "desiredActions": ["read", "edit"],
+                        "approvals": [],
+                    }
+                )
+            )
+            completed = self.run_cli(
+                "session",
+                "start",
+                "--contract",
+                str(CONTRACT),
+                "--task",
+                str(protected_task),
+                "--repo-root",
+                str(repo_path),
+                "--state-dir",
+                str(state_dir),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            session = json.loads(completed.stdout)
+            self.assertEqual(session["state"], "blocked")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,7 @@
+{
+  "intent": "documentation",
+  "requestedBy": "local-user",
+  "targetPaths": ["README.md", "docs/architecture.md"],
+  "desiredActions": ["read", "edit", "commit"],
+  "approvals": []
+}
