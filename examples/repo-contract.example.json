@@ -44,8 +44,8 @@
       "sessionId",
       "requestedBy",
       "route",
-      "preflightStatus",
-      "finalState"
+      "preflight",
+      "state"
     ],
     "retention": "180d"
   }

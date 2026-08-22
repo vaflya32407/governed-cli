@@ -4,6 +4,12 @@
   "title": "Governed CLI Repo Contract",
   "type": "object",
   "additionalProperties": false,
+  "$defs": {
+    "action": {
+      "type": "string",
+      "enum": ["read", "edit", "test", "commit", "open-pr"]
+    }
+  },
   "required": [
     "version",
     "repository",
@@ -32,10 +38,7 @@
       "properties": {
         "allowedActions": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["read", "edit", "test", "commit", "open-pr"]
-          },
+          "items": { "$ref": "#/$defs/action" },
           "uniqueItems": true
         },
         "protectedPaths": {
@@ -80,7 +83,7 @@
               },
               "allowedActions": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": { "$ref": "#/$defs/action" },
                 "uniqueItems": true
               }
             }
