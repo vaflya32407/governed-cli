@@ -83,6 +83,30 @@ class GovernedCliTests(unittest.TestCase):
             payload = json.loads(completed.stdout)
             self.assertEqual(payload["status"], "skipped")
 
+    def test_session_start_with_skipped_preflight_is_planned(self) -> None:
+        with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as state_dir:
+            repo_path = Path(repo_dir)
+            self.init_git_repo(repo_path)
+            custom_contract = Path(repo_dir) / "contract.json"
+            contract = json.loads(CONTRACT.read_text())
+            contract["preflight"]["requiredChecks"] = ["future-check"]
+            custom_contract.write_text(json.dumps(contract))
+            completed = self.run_cli(
+                "session",
+                "start",
+                "--contract",
+                str(custom_contract),
+                "--task",
+                str(TASK),
+                "--repo-root",
+                str(repo_path),
+                "--state-dir",
+                str(state_dir),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            session = json.loads(completed.stdout)
+            self.assertEqual(session["state"], "planned")
+
     def test_session_start_and_audit_show(self) -> None:
         with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as state_dir:
             repo_path = Path(repo_dir)

@@ -106,8 +106,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": "error", "message": str(exc)}, indent=2), file=sys.stderr)
         return 1
 
-    parser.error("unsupported command")
-    return 2
+    raise AssertionError("unreachable")
 
 
 if __name__ == "__main__":

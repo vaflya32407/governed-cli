@@ -18,7 +18,12 @@ class SessionStore:
 
     def create(self, contract: dict, task: dict, route: dict, preflight: dict) -> dict:
         session_id = f"sess_{uuid4().hex[:12]}"
-        state = "validated" if preflight["status"] == "passed" else "blocked"
+        if preflight["status"] == "passed":
+            state = "validated"
+        elif preflight["status"] == "skipped":
+            state = "planned"
+        else:
+            state = "blocked"
         session = {
             "sessionId": session_id,
             "task": {
