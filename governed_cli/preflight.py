@@ -19,6 +19,12 @@ def _check_clean_working_tree(repo_root: str | Path) -> tuple[str, str]:
     return "passed", "working tree is clean"
 
 
+def _is_protected_conflict(target: str, protected: str) -> bool:
+    target_parts = Path(target).parts
+    protected_parts = Path(protected).parts
+    return len(target_parts) >= len(protected_parts) and target_parts[: len(protected_parts)] == protected_parts
+
+
 def run_preflight(contract: dict, task: dict, route: dict, repo_root: str | Path) -> dict:
     policy = contract["policy"]
     target_paths = task.get("targetPaths", [])
@@ -42,7 +48,10 @@ def run_preflight(contract: dict, task: dict, route: dict, repo_root: str | Path
                 details = "route actions allowed by policy"
         elif check_name == "no-protected-path-conflict":
             conflicts = [
-                target for target in target_paths for protected in protected_paths if target.startswith(protected)
+                target
+                for target in target_paths
+                for protected in protected_paths
+                if _is_protected_conflict(target, protected)
             ]
             if conflicts:
                 status = "failed"

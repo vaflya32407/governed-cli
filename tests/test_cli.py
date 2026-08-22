@@ -141,6 +141,41 @@ class GovernedCliTests(unittest.TestCase):
             session = json.loads(completed.stdout)
             self.assertEqual(session["state"], "blocked")
 
+    def test_preflight_path_check_uses_path_segments(self) -> None:
+        with tempfile.TemporaryDirectory() as repo_dir, tempfile.TemporaryDirectory() as artifacts_dir:
+            repo_path = Path(repo_dir)
+            artifacts_path = Path(artifacts_dir)
+            self.init_git_repo(repo_path)
+            custom_contract = artifacts_path / "contract.json"
+            contract = json.loads(CONTRACT.read_text())
+            contract["policy"]["protectedPaths"] = [".github"]
+            custom_contract.write_text(json.dumps(contract))
+            custom_task = artifacts_path / "task.json"
+            custom_task.write_text(
+                json.dumps(
+                    {
+                        "intent": "documentation",
+                        "requestedBy": "local-user",
+                        "targetPaths": [".github-actions/workflow.txt"],
+                        "desiredActions": ["read"],
+                        "approvals": [],
+                    }
+                )
+            )
+            completed = self.run_cli(
+                "preflight",
+                "run",
+                "--contract",
+                str(custom_contract),
+                "--task",
+                str(custom_task),
+                "--repo-root",
+                str(repo_path),
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["status"], "passed")
+
 
 if __name__ == "__main__":
     unittest.main()

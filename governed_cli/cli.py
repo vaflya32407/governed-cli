@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -102,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
             session = SessionStore(args.state_dir).read(args.id)
             return _emit({"sessionId": session["sessionId"], "events": session["audit"]["events"]})
     except (ValidationError, FileNotFoundError, json.JSONDecodeError) as exc:
-        print(json.dumps({"status": "error", "message": str(exc)}, indent=2))
+        print(json.dumps({"status": "error", "message": str(exc)}, indent=2), file=sys.stderr)
         return 1
 
     parser.error("unsupported command")
